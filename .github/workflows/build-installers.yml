@@ -28,32 +28,44 @@ jobs:
           pip install pyinstaller
         shell: bash
 
-      - name: Build MSI installer (Windows)
+      - name: Build NSIS installer (Windows)
         if: matrix.os == 'windows-latest'
+        shell: powershell
         run: |
-          # Install Inno Setup Compiler
-          choco install innosetup -y
+          # Install NSIS
+          choco install nsis -y
 
           # Build the Windows executable
           pyinstaller --onefile --windowed --icon "Remote Zip Explorer.ico" main.py
 
-          # Create Inno Setup script
-          echo '[Setup]' > installer.iss
-          echo 'AppName=Remote Zip Explorer' >> installer.iss
-          echo 'AppVersion=1.0' >> installer.iss
-          echo 'DefaultDirName={pf}\Remote Zip Explorer' >> installer.iss
-          echo 'DefaultGroupName=Remote Zip Explorer' >> installer.iss
-          echo 'OutputBaseFilename=RemoteZipExplorerInstaller' >> installer.iss
-          echo 'Compression=lzma' >> installer.iss
-          echo 'SolidCompression=yes' >> installer.iss
-          echo '[Files]' >> installer.iss
-          echo 'Source: "dist/main.exe"; DestDir: "{app}"; Flags: ignoreversion' >> installer.iss
-          echo '[Icons]' >> installer.iss
-          echo 'Name: "{group}\Remote Zip Explorer"; Filename: "{app}\main.exe"' >> installer.iss
+          # Create NSIS script
+          @"
+          !define APPNAME "Remote Zip Explorer"
+          !define APPVERSION "1.0"
+          !define EXEFILE "main.exe"
+
+          OutFile "RemoteZipExplorerInstaller.exe"
+          InstallDir "$PROGRAMFILES\${APPNAME}"
+          ShowInstDetails show
+
+          Section "Install"
+            SetOutPath "$INSTDIR"
+            File "dist\${EXEFILE}"
+            CreateShortcut "$SMPROGRAMS\${APPNAME}.lnk" "$INSTDIR\${EXEFILE}"
+            CreateShortcut "$DESKTOP\${APPNAME}.lnk" "$INSTDIR\${EXEFILE}"
+          SectionEnd
+
+          Section "Uninstall"
+            Delete "$INSTDIR\${EXEFILE}"
+            Delete "$SMPROGRAMS\${APPNAME}.lnk"
+            Delete "$DESKTOP\${APPNAME}.lnk"
+            RMDir "$INSTDIR"
+          SectionEnd
+          "@ | Out-File -Encoding ASCII installer.nsi
 
           # Compile the installer
-          "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer.iss
-        shell: powershell
+          makensis installer.nsi
+
 
 
       - name: Build DMG installer (macOS)
