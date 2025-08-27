@@ -40,6 +40,7 @@ jobs:
       - name: Build DMG installer (macOS)
         if: matrix.os == 'macos-latest'
         run: |
+          pip install Pillow
           brew install create-dmg
           mkdir -p dist/dmg
           cp dist/main dist/dmg/RemoteZipExplorer
