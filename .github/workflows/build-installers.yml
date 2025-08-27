@@ -12,25 +12,27 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
+
     steps:
       - uses: actions/checkout@v4
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install pyinstaller
+        shell: bash
 
       - name: Build MSI installer (Windows)
         if: matrix.os == 'windows-latest'
         run: |
           pip install pyinstaller[msi]
-          pyinstaller --onefile --windowed --icon "Remote Zip Explorer.ico" main.py
-          # Create MSI using PyInstaller's msi builder
-          pyinstaller --noconfirm --windowed --onefile --icon "Remote Zip Explorer.ico" --msi main.py
+          pyinstaller --noconfirm --onefile --windowed --icon "Remote Zip Explorer.ico" --msi main.py
         shell: bash
 
       - name: Build DMG installer (macOS)
@@ -41,22 +43,59 @@ jobs:
           brew install create-dmg
           mkdir -p dist/dmg
           cp dist/main dist/dmg/RemoteZipExplorer
-          create-dmg --volname "Remote Zip Explorer" --window-pos 200 120 --window-size 800 400 --icon-size 100 --icon "RemoteZipExplorer" 200 190 --app-drop-link 600 185 dist/RemoteZipExplorer.dmg dist/dmg/
+          create-dmg --volname "Remote Zip Explorer" \
+                     --window-pos 200 120 \
+                     --window-size 800 400 \
+                     --icon-size 100 \
+                     --icon "RemoteZipExplorer" 200 190 \
+                     --app-drop-link 600 185 \
+                     dist/RemoteZipExplorer.dmg dist/dmg/
         shell: bash
 
       - name: Build AppImage installer (Linux)
         if: matrix.os == 'ubuntu-latest'
         run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+              libxcb-render-util0 \
+              libxcb-image0 \
+              libxkbcommon-x11-0 \
+              libxcb-shape0 \
+              libxcb-icccm4 \
+              libxcb-cursor0 \
+              libxcb-keysyms1 \
+              libxcb-xkb1 \
+              fuse
+
           pyinstaller --onefile --windowed --icon "Remote Zip Explorer.png" main.py
-          
-          # Download latest appimagetool from GitHub
-          APPIMAGETOOL_URL=$(curl -s https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage | grep browser_download_url | grep appimagetool-x86_64.AppImage | cut -d '"' -f 4)
-          wget "$APPIMAGETOOL_URL" -O appimagetool.AppImage
+
+          # Download latest AppImageTool
+          wget -O appimagetool.AppImage https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
           chmod +x appimagetool.AppImage
+
+          # Prepare AppDir
           mkdir -p AppDir/usr/bin
           cp dist/main AppDir/usr/bin/RemoteZipExplorer
-          # Minimal AppImage creation
-          (cd AppDir && ../appimagetool.AppImage . ../RemoteZipExplorer.AppImage)
+
+          # Minimal AppRun launcher
+          echo -e '#!/bin/bash\n"$APPDIR/usr/bin/RemoteZipExplorer"' > AppDir/AppRun
+          chmod +x AppDir/AppRun
+
+          # Desktop entry
+          cat > AppDir/RemoteZipExplorer.desktop <<'EOF'
+          [Desktop Entry]
+          Name=RemoteZipExplorer
+          Exec=RemoteZipExplorer
+          Icon=RemoteZipExplorer
+          Type=Application
+          Categories=Utility;
+          EOF
+
+          # Icon
+          cp "Remote Zip Explorer.png" AppDir/RemoteZipExplorer.png
+
+          # Build AppImage
+          ./appimagetool.AppImage AppDir ../RemoteZipExplorer.AppImage
         shell: bash
 
       - name: Upload artifact
