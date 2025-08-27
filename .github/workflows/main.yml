@@ -38,7 +38,7 @@ jobs:
         else
           pyinstaller remote_zip_explorer.spec
           mkdir -p dist/installer
-          cp dist/Remote\ Zip\ Explorer dist/installer/
+          cp -r dist/Remote\ Zip\ Explorer dist/installer/
           tar -czvf dist/RemoteZipExplorerInstaller.tar.gz -C dist/installer .
         fi
     - name: Upload artifact
