@@ -50,7 +50,7 @@ jobs:
           pyinstaller --onefile --windowed --icon "Remote Zip Explorer.png" main.py
           
           # Download latest appimagetool from GitHub
-          APPIMAGETOOL_URL=$(curl -s https://api.github.com/repos/AppImage/AppImageKit/releases/latest | grep browser_download_url | grep appimagetool-x86_64.AppImage | cut -d '"' -f 4)
+          APPIMAGETOOL_URL=$(curl -s https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage | grep browser_download_url | grep appimagetool-x86_64.AppImage | cut -d '"' -f 4)
           wget "$APPIMAGETOOL_URL" -O appimagetool.AppImage
           chmod +x appimagetool.AppImage
           mkdir -p AppDir/usr/bin
