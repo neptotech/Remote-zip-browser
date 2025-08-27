@@ -34,9 +34,8 @@ jobs:
 
         # OS-specific packaging
         if [ "${{ matrix.os }}" = "windows-latest" ]; then
-          pip install Pillow
-          pip install pyinstaller-windows-installer
-          pyinstaller-windows-installer "dist/RemoteZipExplorer.exe" --output dist/RemoteZipExplorerInstaller.exe
+          pip install pyinstaller
+          pyinstaller-windows "dist/RemoteZipExplorer.exe" --output dist/RemoteZipExplorerInstaller.exe
 
         elif [ "${{ matrix.os }}" = "macos-latest" ]; then
           hdiutil create -volname "RemoteZipExplorer" -srcfolder dist -ov -format UDZO dist/RemoteZipExplorerInstaller.dmg
