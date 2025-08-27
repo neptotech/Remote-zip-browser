@@ -31,9 +31,30 @@ jobs:
       - name: Build MSI installer (Windows)
         if: matrix.os == 'windows-latest'
         run: |
-          pip install pyinstaller[msi]
-          pyinstaller --noconfirm --onefile --windowed --icon "Remote Zip Explorer.ico" --msi main.py
-        shell: bash
+          # Install Inno Setup Compiler
+          choco install innosetup -y
+
+          # Build the Windows executable
+          pyinstaller --onefile --windowed --icon "Remote Zip Explorer.ico" main.py
+
+          # Create Inno Setup script
+          echo '[Setup]' > installer.iss
+          echo 'AppName=Remote Zip Explorer' >> installer.iss
+          echo 'AppVersion=1.0' >> installer.iss
+          echo 'DefaultDirName={pf}\Remote Zip Explorer' >> installer.iss
+          echo 'DefaultGroupName=Remote Zip Explorer' >> installer.iss
+          echo 'OutputBaseFilename=RemoteZipExplorerInstaller' >> installer.iss
+          echo 'Compression=lzma' >> installer.iss
+          echo 'SolidCompression=yes' >> installer.iss
+          echo '[Files]' >> installer.iss
+          echo 'Source: "dist/main.exe"; DestDir: "{app}"; Flags: ignoreversion' >> installer.iss
+          echo '[Icons]' >> installer.iss
+          echo 'Name: "{group}\Remote Zip Explorer"; Filename: "{app}\main.exe"' >> installer.iss
+
+          # Compile the installer
+          "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer.iss
+        shell: powershell
+
 
       - name: Build DMG installer (macOS)
         if: matrix.os == 'macos-latest'
