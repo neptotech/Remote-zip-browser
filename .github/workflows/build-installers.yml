@@ -48,12 +48,15 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: |
           pyinstaller --onefile --windowed --icon "Remote Zip Explorer.png" main.py
-          sudo apt-get update
-          sudo apt-get install -y appimagetool
+          
+          # Download latest appimagetool from GitHub
+          APPIMAGETOOL_URL=$(curl -s https://api.github.com/repos/AppImage/AppImageKit/releases/latest | grep browser_download_url | grep appimagetool-x86_64.AppImage | cut -d '"' -f 4)
+          wget "$APPIMAGETOOL_URL" -O appimagetool.AppImage
+          chmod +x appimagetool.AppImage
           mkdir -p AppDir/usr/bin
           cp dist/main AppDir/usr/bin/RemoteZipExplorer
           # Minimal AppImage creation
-          (cd AppDir && appimagetool . ../RemoteZipExplorer.AppImage)
+          (cd AppDir && ../appimagetool.AppImage . ../RemoteZipExplorer.AppImage)
         shell: bash
 
       - name: Upload artifact
