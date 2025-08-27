@@ -153,7 +153,7 @@ jobs:
           cp "Remote Zip Explorer.png" AppDir/RemoteZipExplorer.png
 
           mkdir -p dist
-          appimagetool AppDir ./dist/RemoteZipExplorer.AppImage
+          ./appimagetool.AppImage  AppDir ./dist/RemoteZipExplorer.AppImage
 
         shell: bash
 
