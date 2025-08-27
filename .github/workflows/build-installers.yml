@@ -107,8 +107,3 @@ jobs:
             ${{ matrix.os == 'windows-latest' && 'installer-exe' || matrix.os == 'macos-latest' && 'installer-dmg' || matrix.os == 'ubuntu-latest' && 'installer-appimage' }}
           path: |
             ${{ matrix.os == 'windows-latest' && 'dist/Remote Zip Explorer.exe' || matrix.os == 'macos-latest' && 'dist/RemoteZipExplorer.dmg' || matrix.os == 'ubuntu-latest' && 'dist/RemoteZipExplorer.AppImage' }}
-        uses: softprops/action-gh-release@v2
-        with:
-          files: ./*
-        env:
-            GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
