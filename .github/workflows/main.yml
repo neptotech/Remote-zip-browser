@@ -1,10 +1,13 @@
 name: Build PyQt6 App
 
+
 on:
   push:
     branches: [ master ]
   pull_request:
     branches: [ master ]
+  release:
+    types: [created]
 
 jobs:
   build:
@@ -26,14 +29,14 @@ jobs:
     - name: Build with PyInstaller (Installer for each OS)
       run: |
         if [ "${{ matrix.os }}" = "windows-latest" ]; then
-          pyinstaller --noconfirm --windowed --icon "Remote Zip Explorer.png" --name "Remote Zip Explorer" --onefile --add-data "Remote Zip Explorer.png;." --specpath . remote_zip_explorer.spec
+          pyinstaller remote_zip_explorer.spec
           pip install pyinstaller-windows-installer
           pyinstaller-windows-installer dist/Remote\ Zip\ Explorer.exe --output dist/RemoteZipExplorerInstaller.exe
         elif [ "${{ matrix.os }}" = "macos-latest" ]; then
-          pyinstaller --noconfirm --windowed --icon "Remote Zip Explorer.png" --name "Remote Zip Explorer" --onefile --add-data "Remote Zip Explorer.png:." --specpath . remote_zip_explorer.spec
+          pyinstaller remote_zip_explorer.spec
           hdiutil create -volname "RemoteZipExplorer" -srcfolder dist -ov -format UDZO dist/RemoteZipExplorerInstaller.dmg
         else
-          pyinstaller --noconfirm --windowed --icon "Remote Zip Explorer.png" --name "Remote Zip Explorer" --onefile --add-data "Remote Zip Explorer.png:." --specpath . remote_zip_explorer.spec
+          pyinstaller remote_zip_explorer.spec
           mkdir -p dist/installer
           cp dist/Remote\ Zip\ Explorer dist/installer/
           tar -czvf dist/RemoteZipExplorerInstaller.tar.gz -C dist/installer .
@@ -44,3 +47,21 @@ jobs:
         name: remote-zip-explorer-installer-${{ matrix.os }}
         path: |
           dist/RemoteZipExplorerInstaller*
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'release'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      - name: Publish Release Assets
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            artifacts/**/RemoteZipExplorerInstaller*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
