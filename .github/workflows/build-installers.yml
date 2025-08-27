@@ -48,6 +48,7 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: |
           pyinstaller --onefile --windowed --icon "Remote Zip Explorer.png" main.py
+          pyinstaller --onefile --windowed --icon "Remote Zip Explorer.png" main.py
           sudo apt-get update
           sudo apt-get install -y appimagetool
           mkdir -p AppDir/usr/bin
