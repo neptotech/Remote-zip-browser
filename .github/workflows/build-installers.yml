@@ -3,7 +3,6 @@ name: Build Installers
 on:
   push:
     branches: [ master ]
-    tags: [ 'v*' ] 
   pull_request:
     branches: [ master ]
 
@@ -33,64 +32,7 @@ jobs:
         if: matrix.os == 'windows-latest'
         shell: powershell
         run: |
-          # Install NSIS
-          choco install nsis -y
-
-          # Build the Windows executable
-          pyinstaller --onefile --windowed --icon "Remote Zip Explorer.ico" main.py
-
-          # Create NSIS script
-          @"
-          !define APPNAME "Remote Zip Explorer"
-          !define APPVERSION "1.0"
-          !define EXEFILE "Remote Zip Explorer.exe"
-          !define COMPANY "NeptoTech"
-
-          OutFile "RemoteZipExplorerInstaller.exe"
-          InstallDir "$PROGRAMFILES\${APPNAME}"
-          InstallDirRegKey HKCU "Software\${COMPANY}\${APPNAME}" "Install_Dir"
-          ShowInstDetails show
-          ShowUninstDetails show
-
-          Page directory
-          Page instfiles
-          UninstPage uninstConfirm
-          UninstPage instfiles
-
-          Section "Install"
-            SetOutPath "$INSTDIR"
-            File "dist\${EXEFILE}"
-            WriteUninstaller "$INSTDIR\Uninstall.exe"
-
-            ; Shortcuts
-            CreateShortcut "$SMPROGRAMS\${APPNAME}.lnk" "$INSTDIR\${EXEFILE}"
-            CreateShortcut "$DESKTOP\${APPNAME}.lnk" "$INSTDIR\${EXEFILE}"
-
-            ; Registry (Add/Remove Programs entry)
-            WriteRegStr HKCU "Software\${COMPANY}\${APPNAME}" "Install_Dir" "$INSTDIR"
-            WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME}" "DisplayName" "${APPNAME} ${APPVERSION}"
-            WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME}" "UninstallString" "$INSTDIR\Uninstall.exe"
-            WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME}" "Publisher" "${COMPANY}"
-            WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME}" "DisplayVersion" "${APPVERSION}"
-          SectionEnd
-
-          Section "Uninstall"
-            Delete "$INSTDIR\${EXEFILE}"
-            Delete "$INSTDIR\Uninstall.exe"
-
-            Delete "$SMPROGRAMS\${APPNAME}.lnk"
-            Delete "$DESKTOP\${APPNAME}.lnk"
-
-            RMDir "$INSTDIR"
-
-            ; Remove registry keys
-            DeleteRegKey HKCU "Software\${COMPANY}\${APPNAME}"
-            DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME}"
-          SectionEnd
-          "@ | Out-File -Encoding ASCII installer.nsi
-
-          # Compile the installer
-          makensis installer.nsi
+          pyinstaller --onefile --windowed --icon "Remote Zip Explorer.ico" --name "Remote Zip Explorer" main.py
 
 
 
@@ -164,20 +106,4 @@ jobs:
           name: |
             ${{ matrix.os == 'windows-latest' && 'installer-exe' || matrix.os == 'macos-latest' && 'installer-dmg' || matrix.os == 'ubuntu-latest' && 'installer-appimage' }}
           path: |
-            ${{ matrix.os == 'windows-latest' && 'RemoteZipExplorerInstaller.exe' || matrix.os == 'macos-latest' && 'dist/RemoteZipExplorer.dmg' || matrix.os == 'ubuntu-latest' && 'dist/RemoteZipExplorer.AppImage' }}
-  release:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: ./artifacts
-
-
-      - name: Create Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: *
-        env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            ${{ matrix.os == 'windows-latest' && 'dist/Remote Zip Explorer.exe' || matrix.os == 'macos-latest' && 'dist/RemoteZipExplorer.dmg' || matrix.os == 'ubuntu-latest' && 'dist/RemoteZipExplorer.AppImage' }}
