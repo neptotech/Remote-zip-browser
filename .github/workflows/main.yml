@@ -34,6 +34,7 @@ jobs:
 
         # OS-specific packaging
         if [ "${{ matrix.os }}" = "windows-latest" ]; then
+          pip install Pillow
           pip install pyinstaller-windows-installer
           pyinstaller-windows-installer "dist/RemoteZipExplorer.exe" --output dist/RemoteZipExplorerInstaller.exe
 
