@@ -1,4 +1,4 @@
-# PyInstaller spec file for Remote Zip Explorer
+# PyInstaller spe c file for Remote Zip Explorer
 # Uses ico icon for all platforms
 import sys
 from PyInstaller.utils.hooks import collect_submodules
