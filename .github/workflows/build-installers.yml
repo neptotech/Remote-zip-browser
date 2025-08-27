@@ -23,12 +23,44 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install pyinstaller
-      - name: Build installer
+      - name: Build executable
         run: |
           pyinstaller --onefile --windowed --icon "Remote Zip Explorer.ico" main.py
         shell: bash
+
+      - name: Build MSI installer (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          pip install pyinstaller[msi]
+          pyinstaller --onefile --windowed --icon "Remote Zip Explorer.ico" main.py
+          # Create MSI using PyInstaller's msi builder
+          pyinstaller --noconfirm --windowed --onefile --icon "Remote Zip Explorer.ico" --msi main.py
+        shell: bash
+
+      - name: Build DMG installer (macOS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          brew install create-dmg
+          mkdir -p dist/dmg
+          cp dist/main dist/dmg/RemoteZipExplorer
+          create-dmg --volname "Remote Zip Explorer" --window-pos 200 120 --window-size 800 400 --icon-size 100 --icon "RemoteZipExplorer" 200 190 --app-drop-link 600 185 dist/RemoteZipExplorer.dmg dist/dmg/
+        shell: bash
+
+      - name: Build AppImage installer (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y appimagetool
+          mkdir -p AppDir/usr/bin
+          cp dist/main AppDir/usr/bin/RemoteZipExplorer
+          # Minimal AppImage creation
+          (cd AppDir && appimagetool . ../RemoteZipExplorer.AppImage)
+        shell: bash
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: installer-${{ matrix.os }}
-          path: dist/*
+          name: |
+            ${{ matrix.os == 'windows-latest' && 'installer-msi' || matrix.os == 'macos-latest' && 'installer-dmg' || matrix.os == 'ubuntu-latest' && 'installer-appimage' }}
+          path: |
+            ${{ matrix.os == 'windows-latest' && 'dist/*.msi' || matrix.os == 'macos-latest' && 'dist/RemoteZipExplorer.dmg' || matrix.os == 'ubuntu-latest' && 'RemoteZipExplorer.AppImage' }}
