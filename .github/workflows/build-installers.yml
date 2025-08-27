@@ -3,7 +3,6 @@ name: Build Installers
 on:
   push:
     branches: [ master ]
-    tags: [ 'v*' ] 
   pull_request:
     branches: [ master ]
 
@@ -108,17 +107,6 @@ jobs:
             ${{ matrix.os == 'windows-latest' && 'installer-exe' || matrix.os == 'macos-latest' && 'installer-dmg' || matrix.os == 'ubuntu-latest' && 'installer-appimage' }}
           path: |
             ${{ matrix.os == 'windows-latest' && 'dist/Remote Zip Explorer.exe' || matrix.os == 'macos-latest' && 'dist/RemoteZipExplorer.dmg' || matrix.os == 'ubuntu-latest' && 'dist/RemoteZipExplorer.AppImage' }}
-  release:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: ./artifacts
-
-
-      - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
           files: ./*
