@@ -44,11 +44,19 @@ jobs:
           !define APPVERSION "1.0"
           !define EXEFILE "main.exe"
           !define COMPANY "NeptoTech"
+          !define COMPANY "NeptoTech"
 
           OutFile "RemoteZipExplorerInstaller.exe"
           InstallDir "$PROGRAMFILES\${APPNAME}"
           InstallDirRegKey HKCU "Software\${COMPANY}\${APPNAME}" "Install_Dir"
+          InstallDirRegKey HKCU "Software\${COMPANY}\${APPNAME}" "Install_Dir"
           ShowInstDetails show
+          ShowUninstDetails show
+
+          Page directory
+          Page instfiles
+          UninstPage uninstConfirm
+          UninstPage instfiles
           ShowUninstDetails show
 
           Page directory
@@ -62,8 +70,18 @@ jobs:
             WriteUninstaller "$INSTDIR\Uninstall.exe"
 
             ; Shortcuts
+            WriteUninstaller "$INSTDIR\Uninstall.exe"
+
+            ; Shortcuts
             CreateShortcut "$SMPROGRAMS\${APPNAME}.lnk" "$INSTDIR\${EXEFILE}"
             CreateShortcut "$DESKTOP\${APPNAME}.lnk" "$INSTDIR\${EXEFILE}"
+
+            ; Registry (Add/Remove Programs entry)
+            WriteRegStr HKCU "Software\${COMPANY}\${APPNAME}" "Install_Dir" "$INSTDIR"
+            WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME}" "DisplayName" "${APPNAME} ${APPVERSION}"
+            WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME}" "UninstallString" "$INSTDIR\Uninstall.exe"
+            WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME}" "Publisher" "${COMPANY}"
+            WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME}" "DisplayVersion" "${APPVERSION}"
 
             ; Registry (Add/Remove Programs entry)
             WriteRegStr HKCU "Software\${COMPANY}\${APPNAME}" "Install_Dir" "$INSTDIR"
@@ -77,10 +95,17 @@ jobs:
             Delete "$INSTDIR\${EXEFILE}"
             Delete "$INSTDIR\Uninstall.exe"
 
+            Delete "$INSTDIR\Uninstall.exe"
+
             Delete "$SMPROGRAMS\${APPNAME}.lnk"
             Delete "$DESKTOP\${APPNAME}.lnk"
 
+
             RMDir "$INSTDIR"
+
+            ; Remove registry keys
+            DeleteRegKey HKCU "Software\${COMPANY}\${APPNAME}"
+            DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME}"
 
             ; Remove registry keys
             DeleteRegKey HKCU "Software\${COMPANY}\${APPNAME}"
