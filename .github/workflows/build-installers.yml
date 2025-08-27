@@ -178,6 +178,6 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          files: *
+          files: ./*
         env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
