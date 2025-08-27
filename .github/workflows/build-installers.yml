@@ -28,32 +28,37 @@ jobs:
           pip install pyinstaller
         shell: bash
 
-      - name: Build MSI installer (Windows)
-        if: matrix.os == 'windows-latest'
-        run: |
-          # Install Inno Setup Compiler
-          choco install innosetup -y
+        - name: Build Installer (Windows via Inno Setup)
+          if: matrix.os == 'windows-latest'
+          shell: pwsh
+          run: |
+            # Install Inno Setup Compiler
+            choco install innosetup -y
 
-          # Build the Windows executable
-          pyinstaller --onefile --windowed --icon "Remote Zip Explorer.ico" main.py
+            # Build Windows executable with PyInstaller
+            pyinstaller --onefile --windowed --icon "Remote Zip Explorer.ico" --name "RemoteZipExplorer" main.py
 
-          # Create Inno Setup script
-          echo '[Setup]' > installer.iss
-          echo 'AppName=Remote Zip Explorer' >> installer.iss
-          echo 'AppVersion=1.0' >> installer.iss
-          echo 'DefaultDirName={pf}\Remote Zip Explorer' >> installer.iss
-          echo 'DefaultGroupName=Remote Zip Explorer' >> installer.iss
-          echo 'OutputBaseFilename=RemoteZipExplorerInstaller' >> installer.iss
-          echo 'Compression=lzma' >> installer.iss
-          echo 'SolidCompression=yes' >> installer.iss
-          echo '[Files]' >> installer.iss
-          echo 'Source: "dist/main.exe"; DestDir: "{app}"; Flags: ignoreversion' >> installer.iss
-          echo '[Icons]' >> installer.iss
-          echo 'Name: "{group}\Remote Zip Explorer"; Filename: "{app}\main.exe"' >> installer.iss
+            # Write Inno Setup script
+            @"
+            [Setup]
+            AppName=Remote Zip Explorer
+            AppVersion=1.0
+            DefaultDirName={pf}\Remote Zip Explorer
+            DefaultGroupName=Remote Zip Explorer
+            OutputBaseFilename=RemoteZipExplorerInstaller
+            Compression=lzma
+            SolidCompression=yes
 
-          # Compile the installer
-          "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer.iss
-        shell: powershell
+            [Files]
+            Source: "dist\RemoteZipExplorer.exe"; DestDir: "{app}"; Flags: ignoreversion
+
+            [Icons]
+            Name: "{group}\Remote Zip Explorer"; Filename: "{app}\RemoteZipExplorer.exe"
+            "@ | Out-File -Encoding ASCII installer.iss
+
+            # Compile installer
+            & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer.iss
+
 
 
       - name: Build DMG installer (macOS)
