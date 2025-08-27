@@ -2,7 +2,7 @@
 
 
 # PyInstaller spec file for Remote Zip Explorer
-# Uses PNG icon for all platforms
+# Uses ico icon for all platforms
 import sys
 from PyInstaller.utils.hooks import collect_submodules
 
@@ -13,12 +13,12 @@ a = Analysis([
 ],
 	pathex=[],
 	binaries=[],
-	datas=[('Remote Zip Explorer.png', '.')],
+	datas=[('Remote Zip Explorer.ico', '.')],
 	hiddenimports=collect_submodules('remotezip'),
 	hookspath=[],
 	runtime_hooks=[],
 	excludes=[],
-	win_no_prefer_redirects=False,
+		magick "Remote Zip Explorer.ico" "Remote Zip Explorer.ico"_no_prefer_redirects=False,
 	win_private_assemblies=False,
 	cipher=block_cipher,
 )
@@ -34,7 +34,7 @@ exe = EXE(
 	strip=False,
 	upx=True,
 	console=False,
-	icon='Remote Zip Explorer.png',
+	icon='Remote Zip Explorer.ico',
 )
 coll = COLLECT(
 	exe,
