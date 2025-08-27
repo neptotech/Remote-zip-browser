@@ -3,6 +3,7 @@ name: Build Installers
 on:
   push:
     branches: [ master ]
+    tags: [ 'v*' ] 
   pull_request:
     branches: [ master ]
 
@@ -163,7 +164,7 @@ jobs:
           name: |
             ${{ matrix.os == 'windows-latest' && 'installer-exe' || matrix.os == 'macos-latest' && 'installer-dmg' || matrix.os == 'ubuntu-latest' && 'installer-appimage' }}
           path: |
-            ${{ matrix.os == 'windows-latest' && './dist/Remote Zip Explorer.exe' || matrix.os == 'macos-latest' && 'dist/RemoteZipExplorer.dmg' || matrix.os == 'ubuntu-latest' && 'dist/RemoteZipExplorer.AppImage' }}
+            ${{ matrix.os == 'windows-latest' && 'RemoteZipExplorerInstaller.exe' || matrix.os == 'macos-latest' && 'dist/RemoteZipExplorer.dmg' || matrix.os == 'ubuntu-latest' && 'dist/RemoteZipExplorer.AppImage' }}
   release:
     needs: build
     runs-on: ubuntu-latest
@@ -179,5 +180,4 @@ jobs:
         with:
           files: dist/*
         env:
-            tag: v1.0
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
