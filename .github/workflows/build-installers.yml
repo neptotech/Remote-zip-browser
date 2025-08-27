@@ -43,23 +43,48 @@ jobs:
           !define APPNAME "Remote Zip Explorer"
           !define APPVERSION "1.0"
           !define EXEFILE "main.exe"
+          !define COMPANY "NeptoTech"
 
           OutFile "RemoteZipExplorerInstaller.exe"
           InstallDir "$PROGRAMFILES\${APPNAME}"
+          InstallDirRegKey HKCU "Software\${COMPANY}\${APPNAME}" "Install_Dir"
           ShowInstDetails show
+          ShowUninstDetails show
+
+          Page directory
+          Page instfiles
+          UninstPage uninstConfirm
+          UninstPage instfiles
 
           Section "Install"
             SetOutPath "$INSTDIR"
             File "dist\${EXEFILE}"
+            WriteUninstaller "$INSTDIR\Uninstall.exe"
+
+            ; Shortcuts
             CreateShortcut "$SMPROGRAMS\${APPNAME}.lnk" "$INSTDIR\${EXEFILE}"
             CreateShortcut "$DESKTOP\${APPNAME}.lnk" "$INSTDIR\${EXEFILE}"
+
+            ; Registry (Add/Remove Programs entry)
+            WriteRegStr HKCU "Software\${COMPANY}\${APPNAME}" "Install_Dir" "$INSTDIR"
+            WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME}" "DisplayName" "${APPNAME} ${APPVERSION}"
+            WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME}" "UninstallString" "$INSTDIR\Uninstall.exe"
+            WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME}" "Publisher" "${COMPANY}"
+            WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME}" "DisplayVersion" "${APPVERSION}"
           SectionEnd
 
           Section "Uninstall"
             Delete "$INSTDIR\${EXEFILE}"
+            Delete "$INSTDIR\Uninstall.exe"
+
             Delete "$SMPROGRAMS\${APPNAME}.lnk"
             Delete "$DESKTOP\${APPNAME}.lnk"
+
             RMDir "$INSTDIR"
+
+            ; Remove registry keys
+            DeleteRegKey HKCU "Software\${COMPANY}\${APPNAME}"
+            DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME}"
           SectionEnd
           "@ | Out-File -Encoding ASCII installer.nsi
 
@@ -137,4 +162,4 @@ jobs:
           name: |
             ${{ matrix.os == 'windows-latest' && 'installer-exe' || matrix.os == 'macos-latest' && 'installer-dmg' || matrix.os == 'ubuntu-latest' && 'installer-appimage' }}
           path: |
-            ${{ matrix.os == 'windows-latest' && 'RemoteZipExplorerInstaller.exe' || matrix.os == 'macos-latest' && 'dist/RemoteZipExplorer.dmg' || matrix.os == 'ubuntu-latest' && 'RemoteZipExplorer.AppImage' }}
+            ${{ matrix.os == 'windows-latest' && 'RemoteZipExplorerInstaller.exe' || matrix.os == 'macos-latest' && 'dist/RemoteZipExplorer.dmg' || matrix.os == 'ubuntu-latest' && '../RemoteZipExplorer.AppImage' }}
