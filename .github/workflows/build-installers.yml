@@ -135,6 +135,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: |
-            ${{ matrix.os == 'windows-latest' && 'installer-msi' || matrix.os == 'macos-latest' && 'installer-dmg' || matrix.os == 'ubuntu-latest' && 'installer-appimage' }}
+            ${{ matrix.os == 'windows-latest' && 'installer-exe' || matrix.os == 'macos-latest' && 'installer-dmg' || matrix.os == 'ubuntu-latest' && 'installer-appimage' }}
           path: |
-            ${{ matrix.os == 'windows-latest' && 'dist/*.msi' || matrix.os == 'macos-latest' && 'dist/RemoteZipExplorer.dmg' || matrix.os == 'ubuntu-latest' && 'RemoteZipExplorer.AppImage' }}
+            ${{ matrix.os == 'windows-latest' && 'RemoteZipExplorerInstaller.exe' || matrix.os == 'macos-latest' && 'dist/RemoteZipExplorer.dmg' || matrix.os == 'ubuntu-latest' && 'RemoteZipExplorer.AppImage' }}
