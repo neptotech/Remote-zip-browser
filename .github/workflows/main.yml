@@ -28,7 +28,7 @@ jobs:
           pip install -r requirements.txt
           pip install pyinstaller
 
-      - name: Build with PyInstaller and package
+      - name: Build with PyInstaller
         shell: bash
         run: |
           pyinstaller remote_zip_explorer.spec
@@ -36,30 +36,22 @@ jobs:
           if [ "${{ matrix.os }}" = "windows-latest" ]; then
             # Install NSIS
             choco install nsis -y
-
-            # Copy .exe to installer folder
             mkdir -p dist/installer
-            cp "dist/RemoteZipExplorer.exe" dist/installer/
+            cp "dist/RemoteZipExplorer.exe" dist/installer/RemoteZipExplorer.exe
 
-            # Create simple NSIS script
-            cat <<'EOF' > dist/installer/setup.nsi
-            !define APP_NAME "RemoteZipExplorer"
-            !define EXE_FILE "RemoteZipExplorer.exe"
-            !define INSTALL_DIR "$PROGRAMFILES\${APP_NAME}"
-
-            OutFile "RemoteZipExplorerInstaller.exe"
-            InstallDir "${INSTALL_DIR}"
+            # Create a simple NSIS script
+            echo 'OutFile "dist/RemoteZipExplorerInstaller.exe"
+            InstallDir "$PROGRAMFILES\\RemoteZipExplorer"
             Page directory
             Page instfiles
             Section ""
               SetOutPath "$INSTDIR"
-              File "${EXE_FILE}"
-              CreateShortCut "$DESKTOP\${APP_NAME}.lnk" "$INSTDIR\${EXE_FILE}"
-            SectionEnd
-EOF
+              File "dist/installer/RemoteZipExplorer.exe"
+              CreateShortCut "$DESKTOP\\RemoteZipExplorer.lnk" "$INSTDIR\\RemoteZipExplorer.exe"
+            SectionEnd' > dist/installer/setup.nsi
 
-            # Build installer
-            makensis dist/installer/setup.nsi
+            # Compile NSIS installer
+            "C:\\Program Files (x86)\\NSIS\\makensis.exe" dist/installer/setup.nsi
 
           elif [ "${{ matrix.os }}" = "macos-latest" ]; then
             hdiutil create -volname "RemoteZipExplorer" -srcfolder dist -ov -format UDZO dist/RemoteZipExplorerInstaller.dmg
@@ -74,9 +66,9 @@ EOF
         with:
           name: remote-zip-explorer-installer-${{ matrix.os }}
           path: |
-            dist/installer/*
             dist/RemoteZipExplorerInstaller*
-            
+            dist/installer/RemoteZipExplorerInstaller.exe
+
   release:
     needs: build
     runs-on: ubuntu-latest
