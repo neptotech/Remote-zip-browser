@@ -28,17 +28,38 @@ jobs:
           pip install -r requirements.txt
           pip install pyinstaller
 
-      - name: Build with PyInstaller (Installer for each OS)
+      - name: Build with PyInstaller and package
         shell: bash
         run: |
           pyinstaller remote_zip_explorer.spec
 
           if [ "${{ matrix.os }}" = "windows-latest" ]; then
+            # Install NSIS
+            choco install nsis -y
+
+            # Copy .exe to installer folder
             mkdir -p dist/installer
-            cp -a "dist/RemoteZipExplorer" dist/installer/
-            # Create Windows installer executable
-            pip install pyinstaller-windows-installer
-            pyinstaller-windows-installer dist/RemoteZipExplorer.exe --output dist/RemoteZipExplorerInstaller.exe
+            cp "dist/RemoteZipExplorer.exe" dist/installer/
+
+            # Create simple NSIS script
+            cat <<'EOF' > dist/installer/setup.nsi
+            !define APP_NAME "RemoteZipExplorer"
+            !define EXE_FILE "RemoteZipExplorer.exe"
+            !define INSTALL_DIR "$PROGRAMFILES\${APP_NAME}"
+
+            OutFile "RemoteZipExplorerInstaller.exe"
+            InstallDir "${INSTALL_DIR}"
+            Page directory
+            Page instfiles
+            Section ""
+              SetOutPath "$INSTDIR"
+              File "${EXE_FILE}"
+              CreateShortCut "$DESKTOP\${APP_NAME}.lnk" "$INSTDIR\${EXE_FILE}"
+            SectionEnd
+EOF
+
+            # Build installer
+            makensis dist/installer/setup.nsi
 
           elif [ "${{ matrix.os }}" = "macos-latest" ]; then
             hdiutil create -volname "RemoteZipExplorer" -srcfolder dist -ov -format UDZO dist/RemoteZipExplorerInstaller.dmg
@@ -53,8 +74,9 @@ jobs:
         with:
           name: remote-zip-explorer-installer-${{ matrix.os }}
           path: |
+            dist/installer/*
             dist/RemoteZipExplorerInstaller*
-
+            
   release:
     needs: build
     runs-on: ubuntu-latest
