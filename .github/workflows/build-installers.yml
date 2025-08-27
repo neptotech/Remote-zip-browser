@@ -152,8 +152,9 @@ jobs:
           # Icon
           cp "Remote Zip Explorer.png" AppDir/RemoteZipExplorer.png
 
-          # Build AppImage
-          ./appimagetool.AppImage AppDir ../RemoteZipExplorer.AppImage
+          mkdir -p dist
+          appimagetool AppDir dist/RemoteZipExplorer.AppImage
+
         shell: bash
 
       - name: Upload artifact
@@ -162,4 +163,4 @@ jobs:
           name: |
             ${{ matrix.os == 'windows-latest' && 'installer-exe' || matrix.os == 'macos-latest' && 'installer-dmg' || matrix.os == 'ubuntu-latest' && 'installer-appimage' }}
           path: |
-            ${{ matrix.os == 'windows-latest' && 'RemoteZipExplorerInstaller.exe' || matrix.os == 'macos-latest' && 'dist/RemoteZipExplorer.dmg' || matrix.os == 'ubuntu-latest' && '../RemoteZipExplorer.AppImage' }}
+            ${{ matrix.os == 'windows-latest' && 'RemoteZipExplorerInstaller.exe' || matrix.os == 'macos-latest' && 'dist/RemoteZipExplorer.dmg' || matrix.os == 'ubuntu-latest' && 'dist/RemoteZipExplorer.AppImage' }}
