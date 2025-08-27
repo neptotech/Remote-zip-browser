@@ -36,8 +36,8 @@ jobs:
       - name: Build DMG installer (macOS)
         if: matrix.os == 'macos-latest'
         run: |
-          pyinstaller --onefile --windowed --icon "Remote Zip Explorer.icns" main.py
           pip install Pillow
+          pyinstaller --onefile --windowed --icon "Remote Zip Explorer.png" main.py
           brew install create-dmg
           mkdir -p dist/dmg
           cp dist/main dist/dmg/RemoteZipExplorer
