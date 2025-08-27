@@ -26,19 +26,23 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         pip install pyinstaller
-    - name: Build with PyInstaller (Installer for each OS)
+    - name: Build with PyInstaller (Installer for each OS) 
+      shell: bash
       run: |
+        # Build once
+        pyinstaller remote_zip_explorer.spec
+
+        # OS-specific packaging
         if [ "${{ matrix.os }}" = "windows-latest" ]; then
-          pyinstaller remote_zip_explorer.spec
           pip install pyinstaller-windows-installer
-          pyinstaller-windows-installer dist/Remote\ Zip\ Explorer.exe --output dist/RemoteZipExplorerInstaller.exe
+          pyinstaller-windows-installer "dist/RemoteZipExplorer.exe" --output dist/RemoteZipExplorerInstaller.exe
+
         elif [ "${{ matrix.os }}" = "macos-latest" ]; then
-          pyinstaller remote_zip_explorer.spec
           hdiutil create -volname "RemoteZipExplorer" -srcfolder dist -ov -format UDZO dist/RemoteZipExplorerInstaller.dmg
+
         else
-          pyinstaller remote_zip_explorer.spec
           mkdir -p dist/installer
-          cp -r dist/Remote\ Zip\ Explorer dist/installer/
+          cp -a "dist/RemoteZipExplorer" dist/installer/
           tar -czvf dist/RemoteZipExplorerInstaller.tar.gz -C dist/installer .
         fi
     - name: Upload artifact
