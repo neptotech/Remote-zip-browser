@@ -35,8 +35,8 @@ jobs:
           # Install NSIS
           choco install nsis -y
 
-          # Build the Windows executable
-          pyinstaller --onefile --windowed --icon "Remote Zip Explorer.ico" main.py
+            # Build Windows executable with PyInstaller
+            pyinstaller --onefile --windowed --icon "Remote Zip Explorer.ico" --name "RemoteZipExplorer" main.py
 
           # Create NSIS script
           @"
